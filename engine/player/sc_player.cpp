@@ -4805,6 +4805,18 @@ bool compare( const buff_t* a, const buff_t* b )
   if ( b->name_str < a->name_str )
     return false;
 
+  // Check spell data id if available (otherwise ids are 0)
+  auto a_id = a->data().id();
+  auto b_id = b->data().id();
+  if ( a_id < b_id )
+  {
+    return true;
+  }
+  if ( b_id < a_id )
+  {
+    return false;
+  }
+
   // NULL and player are identically considered "bottom" for source comparison
   bool a_is_bottom = ( !a->source || a->source == a->player );
   bool b_is_bottom = ( !b->source || b->source == b->player );
