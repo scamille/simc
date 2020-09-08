@@ -210,4 +210,4 @@ jobs:
         env:
           executablePath: vs\${{ matrix.platform }}\${{ matrix.configuration }}\${{ matrix.executable }}
         if: ${{ matrix.runSmokeTest }}
-        run: ${{ ev.executablePath }} $env:SIMC_PROFILE iterations=5 output=nul html=nul json2=nul cleanup_threads=1
+        run: ${{ env.executablePath }} $env:SIMC_PROFILE iterations=5 output=nul html=nul json2=nul cleanup_threads=1
