@@ -186,19 +186,19 @@ jobs:
     strategy:
       matrix:
         vs: [2017, 2019]
+        projectFile: [vs/simc_vs2017.vcxproj, vs/simc_vs2019.vcxproj]
+        platform: [x64]
         include:
           - vs: 2017
-            platform: x64
             configuration: Debug-WebEngine
-            projectFile: vs/simc_vs2017.vcxproj
-            executable: vs\x64\Debug-WebEngine\simc.exe
             runSmokeTest: false
           - vs: 2019
-            platform: x64
             configuration: Debug-NoNetworking
-            projectFile: vs/simc_vs2019.vcxproj
-            executable: vs\x64\Debug-NoNetworking\simc_vs2019.exe
             runSmokeTest: true
+          - projectFile: vs/simc_vs2017.vcxproj
+            executable: vs\${{ matrix.platform }}\Debug-WebEngine\simc.exe
+          - projectFile: vs/simc_vs2019.vcxproj
+            executable: vs\${{ matrix.platform }}\Debug-NoNetworking\simc_vs2019.exe
 
     steps:
       - uses: actions/checkout@v2
