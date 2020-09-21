@@ -17,7 +17,7 @@ os:
 addons:
   apt:
     sources: 
-    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+    - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
     packages:
     - cmake
     - libcurl4-openssl-dev
