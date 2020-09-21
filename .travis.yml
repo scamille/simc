@@ -14,13 +14,34 @@ arch:
 os:
   - linux
 
-compiler:
-  - gcc
-  - clang
+addons:
+  apt:
+    sources: 
+    - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+    packages:
+    - cmake
+    - libcurl4-openssl-dev
+    - ninja-build
+    - lld
+    - clang-10
+    - lld-10
 
-install:
-  # Build SimulationCraft
-  - make -C engine -j 2 release
+
+compiler:
+#  - gcc
+  - clang
+  
+install: 
+  - cmake -H. -B'./build' -GNinja
+      -DBUILD_GUI=OFF
+      -DCMAKE_BUILD_TYPE=Debug
+      -DCMAKE_CXX_COMPILER=clang++-10 -DCMAKE_C_COMPILER=clang-10
+      -DCMAKE_CXX_FLAGS="-ffile-prefix-map=$./=/
+        -fno-omit-frame-pointer -fsanitize=address,undefined
+        -fsanitize-undefined-strip-path-components=$UBSAN_STRIP_COUNT"
+      -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -fsanitize=address,undefined"
+      -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  - ninja -C './build'
 
 script:
-  - ./engine/simc CI.simc iterations=5 output=/dev/null html=/dev/null json2=/dev/null cleanup_threads=1
+  - ./build/simc CI.simc iterations=10 fight_style=DungeonSlice output=/dev/null html=/dev/null json2=/dev/null cleanup_threads=1
