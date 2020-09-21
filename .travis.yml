@@ -39,7 +39,7 @@ install:
       -DCMAKE_CXX_FLAGS="
         -fno-omit-frame-pointer -fsanitize=address,undefined"
       -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -fsanitize=address,undefined"
-  - ninja -C './build'
+  - ninja -C './build' -j2
 
 script:
   - ./build/simc CI.simc iterations=10 fight_style=DungeonSlice output=/dev/null html=/dev/null json2=/dev/null cleanup_threads=1
