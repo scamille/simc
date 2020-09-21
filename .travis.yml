@@ -35,7 +35,7 @@ compiler:
 before_install:
   - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
   - sudo add-apt-repository -y 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
-  - sudo apt-get -q update
+  - sudo apt-get update
   - sudo apt-get -y install cmake libcurl4-openssl-dev ninja-build clang-10 lld-10
 
 install: 
