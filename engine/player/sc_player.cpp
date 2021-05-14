@@ -49,6 +49,7 @@
 #include "sim/proc.hpp"
 #include "sim/real_ppm.hpp"
 #include "sim/sc_cooldown.hpp"
+#include "sim/cooldown_waste_data.hpp"
 #include "sim/sc_expressions.hpp"
 #include "sim/sc_sim.hpp"
 #include "sim/scale_factor_control.hpp"
@@ -4747,6 +4748,7 @@ void player_t::datacollection_begin()
   range::for_each( proc_list, std::mem_fn( &proc_t::datacollection_begin ) );
   range::for_each( pet_list, std::mem_fn( &pet_t::datacollection_begin ) );
   range::for_each( sample_data_list, std::mem_fn( &sample_data_helper_t::datacollection_begin ) );
+  range::for_each( cooldown_waste_data_list, std::mem_fn( &cooldown_waste_data_t::datacollection_begin ) );
 }
 
 /**
@@ -4811,6 +4813,7 @@ void player_t::datacollection_end()
   range::for_each( benefit_list, std::mem_fn( &benefit_t::datacollection_end ) );
   range::for_each( proc_list, std::mem_fn( &proc_t::datacollection_end ) );
   range::for_each( sample_data_list, std::mem_fn( &sample_data_helper_t::datacollection_end ) );
+  range::for_each( cooldown_waste_data_list, std::mem_fn( &cooldown_waste_data_t::datacollection_end ) );
 }
 
 // player_t::merge ==========================================================
@@ -5059,6 +5062,15 @@ void player_t::merge( player_t& other )
           other.action_list[ i ]->action_list ? other.action_list[ i ]->action_list->name_str.c_str() : "(none)",
           other.action_list[ i ]->signature_str );
     }
+  }
+
+  // Cooldown waste data
+  for ( size_t i = 0; i < cooldown_waste_data_list.size(); i++ )
+  {
+    const auto& ours   = cooldown_waste_data_list[ i ];
+    const auto& theirs = other.cooldown_waste_data_list[ i ];
+    assert( ours->cd->name_str == theirs->cd->name_str );
+    ours->merge( *theirs );
   }
 }
 
@@ -7214,6 +7226,18 @@ uptime_t* player_t::get_uptime( util::string_view name )
   }
 
   return u;
+}
+
+cooldown_waste_data_t* player_t::get_cooldown_waste_data( const cooldown_t* cd )
+{
+  for ( const auto& cdw : cooldown_waste_data_list )
+  {
+    if ( cdw->cd->name_str == cd->name_str )
+      return cdw.get();
+  }
+
+  cooldown_waste_data_list.push_back( std::make_unique<cooldown_waste_data_t>( cd ) );
+  return cooldown_waste_data_list.back().get();
 }
 
 action_priority_list_t* player_t::get_action_priority_list( util::string_view name, util::string_view comment )
@@ -11339,6 +11363,8 @@ void player_t::analyze( sim_t& s )
   range::for_each( proc_list, []( proc_t* pr ) { pr->analyze(); } );
   range::for_each( uptime_list, []( uptime_t* up ) { up->analyze(); } );
   range::for_each( benefit_list, []( benefit_t* ben ) { ben->analyze(); } );
+  
+  range::for_each( cooldown_waste_data_list, std::mem_fn( &cooldown_waste_data_t::analyze ) );
 
   range::sort( stats_list, []( const stats_t* l, const stats_t* r ) { return l->name_str < r->name_str; } );
 

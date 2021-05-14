@@ -7559,38 +7559,21 @@ void monk_t::merge( player_t& other )
   sample_datas.stagger_effective_damage_timeline.merge( other_monk.sample_datas.stagger_effective_damage_timeline );
   sample_datas.stagger_damage_pct_timeline.merge( other_monk.sample_datas.stagger_damage_pct_timeline );
   sample_datas.stagger_pct_timeline.merge( other_monk.sample_datas.stagger_pct_timeline );
-
-  for ( size_t i = 0; i < cooldown_waste_data_list.size(); i++ )
-  {
-    cooldown_waste_data_list[ i ]->merge( *other_monk.cooldown_waste_data_list[ i ] );
-  }
 }
 
 void monk_t::analyze( sim_t& s )
 {
   player_t::analyze( s );
-  for ( auto cdw : cooldown_waste_data_list )
-  {
-    cdw->analyze();
-  }
 }
 
 void monk_t::datacollection_begin()
 {
   player_t::datacollection_begin();
-  for ( auto cdw : cooldown_waste_data_list )
-  {
-    cdw->datacollection_begin();
-  }
 }
 
 void monk_t::datacollection_end()
 {
   player_t::datacollection_end();
-  for ( auto cdw : cooldown_waste_data_list )
-  {
-    cdw->datacollection_end();
-  }
 }
 
 // monk_t::monk_report =================================================
@@ -7632,7 +7615,7 @@ public:
   void cdwaste_table_contents( report::sc_html_stream& os )
   {
     size_t row = 0;
-    for ( const cooldown_waste_data_t* data : p.cooldown_waste_data_list )
+    for ( const auto& data : p.cooldown_waste_data_list )
     {
       if ( !data->active() )
         continue;

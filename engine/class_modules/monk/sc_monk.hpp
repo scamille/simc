@@ -65,83 +65,6 @@ inline unsigned sef_spell_index( sef_ability_e x )
   return x - as<unsigned>( static_cast<int>( SEF_SPELL_MIN ) );
 }
 
-struct cooldown_waste_data_t : public noncopyable
-{
-  const cooldown_t* cd;
-  double buffer;
-
-  extended_sample_data_t normal;
-  extended_sample_data_t cumulative;
-
-  cooldown_waste_data_t( const cooldown_t* cooldown, bool simple = true )
-    : cd( cooldown ),
-      buffer( 0.0 ),
-      normal( cd->name_str + " waste", simple ),
-      cumulative( cd->name_str + " cumulative waste", simple )
-  {
-  }
-
-  virtual bool may_add( timespan_t cd_override = timespan_t::min() ) const
-  {
-    return ( cd->duration > 0_ms || cd_override > 0_ms ) &&
-           ( ( cd->charges == 1 && cd->up() ) || ( cd->charges >= 2 && cd->current_charge == cd->charges ) ) &&
-           ( cd->last_charged > 0_ms && cd->last_charged < cd->sim.current_time() );
-  }
-
-  virtual double get_wasted_time()
-  {
-    return ( cd->sim.current_time() - cd->last_charged ).total_seconds();
-  }
-
-  void add( timespan_t cd_override = timespan_t::min(), timespan_t time_to_execute = 0_ms )
-  {
-    if ( may_add( cd_override ) )
-    {
-      double wasted = get_wasted_time();
-      if ( cd->charges == 1 )
-      {
-        wasted -= time_to_execute.total_seconds();
-      }
-      normal.add( wasted );
-      buffer += wasted;
-    }
-  }
-
-  bool active() const
-  {
-    return normal.count() > 0 && cumulative.sum() > 0;
-  }
-
-  void merge( const cooldown_waste_data_t& other )
-  {
-    normal.merge( other.normal );
-    cumulative.merge( other.cumulative );
-  }
-
-  void analyze()
-  {
-    normal.analyze();
-    cumulative.analyze();
-  }
-
-  void datacollection_begin()
-  {
-    buffer = 0.0;
-  }
-
-  void datacollection_end()
-  {
-    if ( may_add() )
-      buffer += get_wasted_time();
-    cumulative.add( buffer );
-    buffer = 0.0;
-  }
-
-  virtual ~cooldown_waste_data_t()
-  {
-  }
-};
-
 struct monk_td_t : public actor_target_data_t
 {
 public:
@@ -193,9 +116,6 @@ public:
 
   // Active
   action_t* windwalking_aura;
-
-  // waste tracking
-  auto_dispose<std::vector<cooldown_waste_data_t*> > cooldown_waste_data_list;
 
   struct
   {
